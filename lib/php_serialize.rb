@@ -246,8 +246,20 @@ module PHP
 			when 's' # string, s:length:"data";
 				len = string.read_until(':').to_i + 3 # quotes, separator
             raw_val = string.read(len)
+            if raw_val.match(/\\.*"\Z/)
+              raw_val += string.read(1)
+            end
             if md = raw_val.match(/\A"(.*)";\Z/m)
               val = md[1]
+              if val =~ /[\x80-\xff]/n
+                # Get rid of Microsoft stupid quotes
+                val = val.tr("\x82\x8b\x91\x92\x9b\xb4\x84\x93\x94".b, "''''''\"\"\"")
+              end
+              if val =~ /\A([\xc0-\xff][\x80-\xbf]{1,3})+\Z/n
+                val.force_encoding('UTF-8')
+              elsif val =~ /[\x80-\xff]/n
+                val.force_encoding('ISO-8859-1').encode('UTF-8')
+              end
             else
               raise TypeError, "Malformed string serialization '#{raw_val}'"
             end
