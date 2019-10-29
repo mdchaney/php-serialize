@@ -246,7 +246,7 @@ module PHP
 			when 's' # string, s:length:"data";
 				len = string.read_until(':').to_i + 3 # quotes, separator
             raw_val = string.read(len)
-            if md = raw_val.match(/\A"(.*)"\Z/)
+            if md = raw_val.match(/\A"(.*)":\Z/)
               val = md[1]
             else
               raise TypeError, "Malformed string serialization '#{raw_val}'"
