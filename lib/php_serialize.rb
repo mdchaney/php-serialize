@@ -245,7 +245,12 @@ module PHP
 
 			when 's' # string, s:length:"data";
 				len = string.read_until(':').to_i + 3 # quotes, separator
-				val = string.read(len)[1...-2] # read it, kill useless quotes
+            raw_val = string.read(len)
+            if md = raw_val.match(/\A"(.*)"\Z/)
+              val = md[1]
+            else
+              raise TypeError, "Malformed string serialization '#{raw_val}'"
+            end
 
 			when 'i' # integer, i:123
 				val = string.read_until(';').to_i
